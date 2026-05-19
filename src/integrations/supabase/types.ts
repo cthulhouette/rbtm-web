@@ -14,7 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contact_submissions: {
+        Row: {
+          company: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          submitted_at: string
+        }
+        Insert: {
+          company?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          submitted_at?: string
+        }
+        Update: {
+          company?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          submitted_at?: string
+        }
+        Relationships: []
+      }
+      gallery_items: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          order: number
+          type: string
+          url: string
+          visible: boolean
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          order?: number
+          type: string
+          url: string
+          visible?: boolean
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          order?: number
+          type?: string
+          url?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          order: number
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          order?: number
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          order?: number
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          field_key: string
+          field_value: string | null
+          id: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          field_key: string
+          field_value?: string | null
+          id?: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          field_key?: string
+          field_value?: string | null
+          id?: string
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
