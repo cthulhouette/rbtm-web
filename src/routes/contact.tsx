@@ -55,25 +55,27 @@ function ContactPage() {
     (e.target as HTMLFormElement).reset();
   }
 
+  const fields = [
+    { name: "name", labelKey: "name_label", fallback: "Name", required: true },
+    { name: "company", labelKey: "company_label", fallback: "Company" },
+    { name: "email", labelKey: "email_field_label", fallback: "Email", type: "email", required: true },
+    { name: "phone", labelKey: "phone_field_label", fallback: "Phone" },
+  ] as const;
+
   return (
     <PublicLayout>
       <section className="bg-beige">
         <div className="container-x py-20 md:py-28">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-ink/60 mb-4">Contact</div>
-          <h1 className="text-4xl md:text-6xl max-w-3xl">Request a quote.</h1>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-ink/60 mb-4">{c(map, "contact", "eyebrow", "Contact")}</div>
+          <h1 className="text-4xl md:text-6xl max-w-3xl">{c(map, "contact", "h1", "Request a quote.")}</h1>
         </div>
       </section>
       <section className="container-x py-20 grid md:grid-cols-[1fr_380px] gap-16">
         <form onSubmit={onSubmit} className="space-y-5">
-          {[
-            { name: "name", label: "Name", required: true },
-            { name: "company", label: "Company" },
-            { name: "email", label: "Email", type: "email", required: true },
-            { name: "phone", label: "Phone" },
-          ].map((f) => (
+          {fields.map((f) => (
             <div key={f.name}>
               <label className="block text-[10px] uppercase tracking-[0.25em] text-ink/60 mb-2">
-                {f.label}{f.required && " *"}
+                {c(map, "contact", f.labelKey, f.fallback)}{f.required && " *"}
               </label>
               <input
                 name={f.name}
@@ -84,7 +86,7 @@ function ContactPage() {
             </div>
           ))}
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-ink/60 mb-2">Message *</label>
+            <label className="block text-[10px] uppercase tracking-[0.25em] text-ink/60 mb-2">{c(map, "contact", "message_label", "Message")} *</label>
             <textarea
               name="message"
               required
@@ -97,17 +99,17 @@ function ContactPage() {
             disabled={submitting}
             className="bg-ink text-background px-10 py-4 text-xs font-bold uppercase tracking-[0.22em] hover:bg-ink/85 disabled:opacity-60"
           >
-            {submitting ? "Sending…" : "Send Inquiry"}
+            {submitting ? c(map, "contact", "submitting_label", "Sending…") : c(map, "contact", "submit_label", "Send Inquiry")}
           </button>
         </form>
         <aside className="border-l border-ink/15 pl-8 space-y-8">
           {[
-            { label: "Address", value: c(map, "contact_info", "address", "") },
-            { label: "Phone", value: c(map, "contact_info", "phone", "") },
-            { label: "Email", value: c(map, "contact_info", "email", "") },
+            { labelKey: "address_label", fallback: "Address", value: c(map, "contact_info", "address", "") },
+            { labelKey: "phone_label", fallback: "Phone", value: c(map, "contact_info", "phone", "") },
+            { labelKey: "email_label", fallback: "Email", value: c(map, "contact_info", "email", "") },
           ].map((b) => (
-            <div key={b.label}>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2">{b.label}</div>
+            <div key={b.labelKey}>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2">{c(map, "contact", b.labelKey, b.fallback)}</div>
               <p className="text-sm leading-relaxed">{b.value}</p>
             </div>
           ))}
