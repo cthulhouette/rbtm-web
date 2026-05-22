@@ -55,12 +55,12 @@ function ContactPage() {
     (e.target as HTMLFormElement).reset();
   }
 
-  const fields = [
+  const fields: { name: string; labelKey: string; fallback: string; type?: string; required?: boolean }[] = [
     { name: "name", labelKey: "name_label", fallback: "Name", required: true },
     { name: "company", labelKey: "company_label", fallback: "Company" },
     { name: "email", labelKey: "email_field_label", fallback: "Email", type: "email", required: true },
     { name: "phone", labelKey: "phone_field_label", fallback: "Phone" },
-  ] as const;
+  ];
 
   return (
     <PublicLayout>
