@@ -116,6 +116,8 @@ function ContentEditor() {
   const { data, isLoading } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
   const [draft, setDraft] = useState<Record<string, Record<string, string>>>({});
   const [saving, setSaving] = useState(false);
+  const [deletedKeys, setDeletedKeys] = useState<{ section: string; field_key: string }[]>([]);
+  const [newSection, setNewSection] = useState("");
 
   useEffect(() => {
     if (data) setDraft(data);
@@ -123,6 +125,44 @@ function ContentEditor() {
 
   function update(section: string, key: string, value: string) {
     setDraft((d) => ({ ...d, [section]: { ...(d[section] || {}), [key]: value } }));
+  }
+
+  function addField(section: string) {
+    const key = prompt(`New field key for "${section}" (letters, numbers, underscores):`)?.trim();
+    if (!key) return;
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) return toast.error("Use only letters, numbers, underscores.");
+    if (draft[section]?.[key] !== undefined) return toast.error("Field already exists.");
+    setDraft((d) => ({ ...d, [section]: { ...(d[section] || {}), [key]: "" } }));
+  }
+
+  function removeField(section: string, key: string) {
+    if (!confirm(`Delete field "${key}" from "${section}"?`)) return;
+    setDraft((d) => {
+      const next = { ...d, [section]: { ...(d[section] || {}) } };
+      delete next[section][key];
+      return next;
+    });
+    setDeletedKeys((arr) => [...arr, { section, field_key: key }]);
+  }
+
+  function addSection() {
+    const s = newSection.trim();
+    if (!s) return;
+    if (!/^[a-zA-Z0-9_]+$/.test(s)) return toast.error("Use only letters, numbers, underscores.");
+    if (draft[s]) return toast.error("Section already exists.");
+    setDraft((d) => ({ ...d, [s]: {} }));
+    setNewSection("");
+  }
+
+  function removeSection(section: string) {
+    if (!confirm(`Delete entire section "${section}" and all its fields?`)) return;
+    const keys = Object.keys(draft[section] || {});
+    setDeletedKeys((arr) => [...arr, ...keys.map((k) => ({ section, field_key: k }))]);
+    setDraft((d) => {
+      const next = { ...d };
+      delete next[section];
+      return next;
+    });
   }
 
   async function save() {
@@ -133,21 +173,28 @@ function ContentEditor() {
         rows.push({ section, field_key: key, field_value: draft[section][key] });
       }
     }
-    const { error } = await supabase
-      .from("site_content")
-      .upsert(rows, { onConflict: "section,field_key" });
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from("site_content")
+        .upsert(rows, { onConflict: "section,field_key" });
+      if (error) {
+        setSaving(false);
+        toast.error(error.message);
+        return;
+      }
     }
+    for (const d of deletedKeys) {
+      await supabase.from("site_content").delete().match(d);
+    }
+    setDeletedKeys([]);
+    setSaving(false);
     toast.success("Content published.");
     qc.invalidateQueries({ queryKey: ["site_content"] });
   }
 
   if (isLoading) return <Loader2 className="animate-spin" />;
 
-  const sections = Object.keys(draft);
+  const sections = Object.keys(draft).sort();
 
   return (
     <div>
@@ -155,14 +202,40 @@ function ContentEditor() {
       <div className="grid gap-6">
         {sections.map((s) => (
           <Card key={s}>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-4">{s}</div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50">{s}</div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => addField(s)}
+                  className="text-[10px] uppercase tracking-[0.18em] border border-ink/30 px-3 py-1.5 hover:bg-muted"
+                >
+                  + Field
+                </button>
+                <button
+                  onClick={() => removeSection(s)}
+                  className="text-[10px] uppercase tracking-[0.18em] border border-ink/30 px-2 py-1.5 text-ink/60 hover:text-destructive"
+                  title="Delete section"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            </div>
             <div className="grid gap-4">
               {Object.keys(draft[s]).map((k) => {
                 const value = draft[s][k];
                 const isLong = value.length > 80;
                 return (
                   <div key={k}>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5">{k}</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[11px] font-semibold uppercase tracking-[0.18em]">{k}</label>
+                      <button
+                        onClick={() => removeField(s, k)}
+                        className="text-ink/40 hover:text-destructive"
+                        title="Delete field"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                     {isLong ? (
                       <textarea
                         value={value}
@@ -180,9 +253,29 @@ function ContentEditor() {
                   </div>
                 );
               })}
+              {Object.keys(draft[s]).length === 0 && (
+                <div className="text-xs text-ink/40 italic">No fields. Click + Field to add one.</div>
+              )}
             </div>
           </Card>
         ))}
+        <Card>
+          <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-3">Add New Section</div>
+          <div className="flex gap-2">
+            <input
+              value={newSection}
+              onChange={(e) => setNewSection(e.target.value)}
+              placeholder="section_key"
+              className="flex-1 border border-ink/30 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={addSection}
+              className="bg-ink text-background px-5 py-2 text-[10px] font-bold uppercase tracking-[0.22em]"
+            >
+              + Section
+            </button>
+          </div>
+        </Card>
       </div>
       <button
         onClick={save}

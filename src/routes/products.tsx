@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/PublicLayout";
-import { fetchProducts } from "@/lib/content";
+import { fetchProducts, fetchSiteContent, c } from "@/lib/content";
 import yarn from "@/assets/product-yarn.jpg";
 import shirting from "@/assets/product-shirting.jpg";
 import denim from "@/assets/product-denim.jpg";
@@ -21,12 +21,14 @@ export const Route = createFileRoute("/products")({
 
 function ProductsPage() {
   const { data: products, isLoading } = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
+  const { data: content } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
+  const map = content ?? {};
 
   return (
     <PublicLayout>
       <section className="container-x py-20 md:py-32">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-ink/50 mb-4">Capabilities</div>
-        <h1 className="text-4xl md:text-6xl max-w-3xl">Engineered for global apparel programs.</h1>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-ink/50 mb-4">{c(map, "products", "eyebrow", "Capabilities")}</div>
+        <h1 className="text-4xl md:text-6xl max-w-3xl">{c(map, "products", "h1", "Engineered for global apparel programs.")}</h1>
         <div className="mt-16 grid gap-px bg-ink/15 md:grid-cols-2 lg:grid-cols-3 border border-ink/15">
           {isLoading &&
             Array.from({ length: 6 }).map((_, i) => (
