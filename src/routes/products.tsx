@@ -1,13 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Plus, Minus } from "lucide-react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { fetchProducts, fetchSiteContent, c } from "@/lib/content";
-import yarn from "@/assets/product-yarn.jpg";
-import shirting from "@/assets/product-shirting.jpg";
-import denim from "@/assets/product-denim.jpg";
-import blend from "@/assets/product-blend.jpg";
 
-const fallbackImgs = [yarn, shirting, denim, blend];
 
 export const Route = createFileRoute("/products")({
   head: () => ({
