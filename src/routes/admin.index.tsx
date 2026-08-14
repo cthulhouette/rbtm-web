@@ -334,7 +334,6 @@ function ProductsEditor() {
 function ProductRow({ product }: { product: any }) {
   const qc = useQueryClient();
   const [p, setP] = useState(product);
-  const [uploading, setUploading] = useState(false);
 
   async function save() {
     const { error } = await supabase
@@ -342,7 +341,6 @@ function ProductRow({ product }: { product: any }) {
       .update({
         name: p.name,
         description: p.description,
-        image_url: p.image_url,
         order: p.order,
         visible: p.visible,
       })
@@ -361,45 +359,9 @@ function ProductRow({ product }: { product: any }) {
     qc.invalidateQueries({ queryKey: ["products"] });
   }
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const path = `products/${crypto.randomUUID()}-${file.name}`;
-    const { error } = await supabase.storage.from("rb-textile-media").upload(path, file);
-    if (error) {
-      setUploading(false);
-      return toast.error(error.message);
-    }
-    const { data } = supabase.storage.from("rb-textile-media").getPublicUrl(path);
-    setP({ ...p, image_url: data.publicUrl });
-    setUploading(false);
-  }
-
   return (
     <Card>
-      <div className="grid md:grid-cols-[160px_1fr_auto] gap-6">
-        <div>
-          <div className="aspect-[4/5] bg-muted overflow-hidden mb-2">
-            {p.image_url ? (
-              <img src={p.image_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10px] uppercase tracking-[0.2em] text-ink/40">
-                No image
-              </div>
-            )}
-          </div>
-          <label className="flex items-center justify-center gap-2 border border-ink/30 px-2 py-2 text-[10px] uppercase tracking-[0.18em] cursor-pointer hover:bg-muted">
-            <Upload size={12} /> {uploading ? "..." : "Upload"}
-            <input type="file" accept="image/*" className="hidden" onChange={onFile} />
-          </label>
-          <input
-            value={p.image_url ?? ""}
-            onChange={(e) => setP({ ...p, image_url: e.target.value })}
-            placeholder="or paste URL"
-            className="mt-2 w-full border border-ink/20 px-2 py-1.5 text-[11px]"
-          />
-        </div>
+      <div className="grid md:grid-cols-[1fr_auto] gap-6">
         <div className="space-y-3">
           <input
             value={p.name}
@@ -409,7 +371,8 @@ function ProductRow({ product }: { product: any }) {
           <textarea
             value={p.description ?? ""}
             onChange={(e) => setP({ ...p, description: e.target.value })}
-            rows={3}
+            rows={5}
+            placeholder="Details shown when the product name is clicked"
             className="w-full border border-ink/30 px-3 py-2 text-sm"
           />
           <div className="flex gap-4 items-center text-xs">

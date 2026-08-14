@@ -1,13 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Plus, Minus } from "lucide-react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { fetchProducts, fetchSiteContent, c } from "@/lib/content";
-import yarn from "@/assets/product-yarn.jpg";
-import shirting from "@/assets/product-shirting.jpg";
-import denim from "@/assets/product-denim.jpg";
-import blend from "@/assets/product-blend.jpg";
 
-const fallbackImgs = [yarn, shirting, denim, blend];
 
 export const Route = createFileRoute("/products")({
   head: () => ({
@@ -23,37 +20,49 @@ function ProductsPage() {
   const { data: products, isLoading } = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
   const { data: content } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
   const map = content ?? {};
+  const [open, setOpen] = useState<string | null>(null);
 
   return (
     <PublicLayout>
       <section className="container-x py-20 md:py-32">
         <div className="text-[10px] uppercase tracking-[0.3em] text-ink/50 mb-4">{c(map, "products", "eyebrow", "Capabilities")}</div>
         <h1 className="text-4xl md:text-6xl max-w-3xl">{c(map, "products", "h1", "Engineered for global apparel programs.")}</h1>
-        <div className="mt-16 grid gap-px bg-ink/15 md:grid-cols-2 lg:grid-cols-3 border border-ink/15">
+        <div className="mt-16 border-t border-ink/20">
           {isLoading &&
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-background p-6">
-                <div className="aspect-[4/5] bg-muted animate-pulse" />
-                <div className="h-5 mt-4 bg-muted animate-pulse w-1/2" />
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="border-b border-ink/20 py-8">
+                <div className="h-6 bg-muted animate-pulse w-1/3" />
               </div>
             ))}
-          {(products ?? []).map((p, i) => (
-            <article key={p.id} className="bg-background p-6 flex flex-col">
-              <div className="aspect-[4/5] bg-muted overflow-hidden mb-5">
-                <img
-                  src={p.image_url || fallbackImgs[i % 4]}
-                  alt={p.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50">
-                0{(i + 1).toString().padStart(2, "0")}
-              </div>
-              <h3 className="text-xl mt-1">{p.name}</h3>
-              <p className="text-sm text-ink/70 mt-3 leading-relaxed">{p.description}</p>
-            </article>
-          ))}
+          {(products ?? []).map((p, i) => {
+            const isOpen = open === p.id;
+            return (
+              <article key={p.id} className="border-b border-ink/20">
+                <button
+                  onClick={() => setOpen(isOpen ? null : p.id)}
+                  aria-expanded={isOpen}
+                  className="w-full flex items-baseline gap-6 py-7 text-left group"
+                >
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-ink/40 w-10 shrink-0">
+                    {(i + 1).toString().padStart(2, "0")}
+                  </span>
+                  <span className="flex-1 text-xl md:text-3xl font-semibold group-hover:translate-x-1 transition-transform">
+                    {p.name}
+                  </span>
+                  <span className="shrink-0 text-ink/60">
+                    {isOpen ? <Minus size={20} /> : <Plus size={20} />}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="pb-10 pl-0 md:pl-16 max-w-3xl">
+                    <p className="text-sm md:text-base text-ink/70 leading-relaxed whitespace-pre-line">
+                      {p.description}
+                    </p>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </section>
     </PublicLayout>
