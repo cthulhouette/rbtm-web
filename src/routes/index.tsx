@@ -20,18 +20,20 @@ function HomePage() {
   const { data: content } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
   const { data: products } = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
   const map = content ?? {};
+  const hero = c(map, "hero", "image_url", "") || heroImg;
 
   return (
     <PublicLayout>
       {/* Hero */}
       <section className="relative bg-ink text-background overflow-hidden">
         <img
-          src={heroImg}
-          alt="RB Textile Mills factory floor"
+          src={hero}
+          alt={c(map, "hero", "image_alt", "RB Textile Mills factory floor")}
           className="absolute inset-0 w-full h-full object-cover opacity-40"
           width={1920}
           height={1080}
         />
+
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/70" />
         <div className="relative container-x py-24 md:py-40 max-w-5xl">
           <div className="text-[10px] uppercase tracking-[0.32em] text-beige mb-6 fade-in-up">
