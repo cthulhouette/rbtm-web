@@ -99,21 +99,20 @@ function HomePage() {
         </div>
         <div className="grid gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
           {(products ?? []).slice(0, 4).map((p, i) => (
-            <article key={p.id} className="bg-background p-6 flex flex-col">
-              <div className="aspect-[4/5] bg-muted mb-5 overflow-hidden">
-                <img
-                  src={p.image_url || fallbackImgs[i % 4]}
-                  alt={p.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
+            <article key={p.id} className="bg-background p-8 flex flex-col min-h-[220px]">
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50">0{i + 1}</div>
-              <h3 className="text-lg mt-1">{p.name}</h3>
-              <p className="text-sm text-ink/70 mt-2 leading-relaxed">{p.description}</p>
+              <h3 className="text-xl mt-2">{p.name}</h3>
+              <p className="text-sm text-ink/70 mt-3 leading-relaxed line-clamp-4">{p.description}</p>
+              <Link
+                to="/products"
+                className="mt-auto pt-6 text-[10px] font-bold uppercase tracking-[0.22em] underline underline-offset-4"
+              >
+                {c(map, "home", "read_more", "Read more →")}
+              </Link>
             </article>
           ))}
         </div>
+
       </section>
 
       {/* About teaser */}
