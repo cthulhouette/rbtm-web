@@ -102,10 +102,12 @@ function HomePage() {
               <p className="text-sm text-ink/70 mt-3 leading-relaxed line-clamp-4">{p.description}</p>
               <Link
                 to="/products"
+                search={{ product: productSlug(p.name) }}
                 className="mt-auto pt-6 text-[10px] font-bold uppercase tracking-[0.22em] underline underline-offset-4"
               >
                 {c(map, "home", "read_more", "Read more →")}
               </Link>
+
             </article>
           ))}
         </div>
