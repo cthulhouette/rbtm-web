@@ -221,42 +221,21 @@ function ContentEditor() {
               </div>
             </div>
             <div className="grid gap-4">
-              {Object.keys(draft[s]).map((k) => {
-                const value = draft[s][k];
-                const isLong = value.length > 80;
-                return (
-                  <div key={k}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.18em]">{k}</label>
-                      <button
-                        onClick={() => removeField(s, k)}
-                        className="text-ink/40 hover:text-destructive"
-                        title="Delete field"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                    {isLong ? (
-                      <textarea
-                        value={value}
-                        onChange={(e) => update(s, k, e.target.value)}
-                        rows={3}
-                        className="w-full border border-ink/30 px-3 py-2 text-sm focus:outline-none focus:border-ink"
-                      />
-                    ) : (
-                      <input
-                        value={value}
-                        onChange={(e) => update(s, k, e.target.value)}
-                        className="w-full border border-ink/30 px-3 py-2 text-sm focus:outline-none focus:border-ink"
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              {Object.keys(draft[s]).map((k) => (
+                <FieldEditor
+                  key={k}
+                  section={s}
+                  fieldKey={k}
+                  value={draft[s][k]}
+                  onChange={(v) => update(s, k, v)}
+                  onDelete={() => removeField(s, k)}
+                />
+              ))}
               {Object.keys(draft[s]).length === 0 && (
                 <div className="text-xs text-ink/40 italic">No fields. Click + Field to add one.</div>
               )}
             </div>
+
           </Card>
         ))}
         <Card>
@@ -287,6 +266,82 @@ function ContentEditor() {
     </div>
   );
 }
+
+function FieldEditor({
+  section,
+  fieldKey,
+  value,
+  onChange,
+  onDelete,
+}: {
+  section: string;
+  fieldKey: string;
+  value: string;
+  onChange: (v: string) => void;
+  onDelete: () => void;
+}) {
+  const looksLikeImage = /^https?:\/\//.test(value) || /image|photo|img|url|logo|banner/i.test(fieldKey);
+  const [multiline, setMultiline] = useState(value.length > 80 || value.includes("\n"));
+  const [uploading, setUploading] = useState(false);
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const path = `content/${section}/${crypto.randomUUID()}-${file.name}`;
+    const { error } = await supabase.storage.from("rb-textile-media").upload(path, file);
+    if (error) {
+      setUploading(false);
+      return toast.error(error.message);
+    }
+    const { data } = supabase.storage.from("rb-textile-media").getPublicUrl(path);
+    onChange(data.publicUrl);
+    setUploading(false);
+    toast.success("Uploaded. Remember to publish.");
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5 gap-3">
+        <label className="block text-[11px] font-semibold uppercase tracking-[0.18em]">{fieldKey}</label>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMultiline((m) => !m)}
+            className="text-[9px] uppercase tracking-[0.18em] text-ink/50 hover:text-ink"
+          >
+            {multiline ? "Short text" : "Long text"}
+          </button>
+          <label className="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-ink/50 hover:text-ink cursor-pointer">
+            <Upload size={11} /> {uploading ? "…" : "Upload"}
+            <input type="file" accept="image/*" className="hidden" onChange={onFile} />
+          </label>
+          <button onClick={onDelete} className="text-ink/40 hover:text-destructive" title="Delete field">
+            <Trash2 size={12} />
+          </button>
+        </div>
+      </div>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={4}
+          className="w-full border border-ink/30 px-3 py-2 text-sm focus:outline-none focus:border-ink"
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full border border-ink/30 px-3 py-2 text-sm focus:outline-none focus:border-ink"
+        />
+      )}
+      {looksLikeImage && /^https?:\/\/\S+\.(png|jpe?g|webp|gif|avif)/i.test(value) && (
+        <img src={value} alt="" className="mt-2 h-24 w-auto object-cover border border-ink/15" />
+      )}
+    </div>
+  );
+}
+
+
 
 /* ----- Products ----- */
 function ProductsEditor() {
