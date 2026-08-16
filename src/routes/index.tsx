@@ -4,12 +4,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { fetchSiteContent, fetchProducts, c } from "@/lib/content";
 import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero-mill.jpg";
-import yarn from "@/assets/product-yarn.jpg";
-import shirting from "@/assets/product-shirting.jpg";
-import denim from "@/assets/product-denim.jpg";
-import blend from "@/assets/product-blend.jpg";
 
-const fallbackImgs = [yarn, shirting, denim, blend];
 
 export const Route = createFileRoute("/")({
   head: () => ({
