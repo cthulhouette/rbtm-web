@@ -26,6 +26,31 @@ function ProductsPage() {
   const { data: content } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
   const map = content ?? {};
   const [open, setOpen] = useState<string | null>(null);
+  const { product: productParam } = Route.useSearch();
+  const navigate = useNavigate({ from: "/products" });
+  const refs = useRef<Record<string, HTMLElement | null>>({});
+  const scrolled = useRef(false);
+
+  useEffect(() => {
+    if (!productParam || !products) return;
+    const match = products.find((p) => productSlug(p.name) === productParam);
+    if (!match) return;
+    setOpen(match.id);
+    if (!scrolled.current) {
+      scrolled.current = true;
+      requestAnimationFrame(() =>
+        refs.current[match.id]?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      );
+    }
+  }, [productParam, products]);
+
+  const toggle = (id: string, name: string, isOpen: boolean) => {
+    setOpen(isOpen ? null : id);
+    navigate({
+      search: isOpen ? {} : { product: productSlug(name) },
+      replace: true,
+    });
+  };
 
   const readMore = c(map, "products", "read_more", "Read more");
   const readLess = c(map, "products", "read_less", "Close");
