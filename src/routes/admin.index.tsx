@@ -194,7 +194,12 @@ function ContentEditor() {
 
   if (isLoading) return <Loader2 className="animate-spin" />;
 
-  const sections = Object.keys(draft).sort();
+  const sectionOrder = ["hero", "home", "about", "products", "gallery", "contact"];
+  const sections = Object.keys(draft).sort((a, b) => {
+    const ia = sectionOrder.indexOf(a);
+    const ib = sectionOrder.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b);
+  });
 
   return (
     <div>
@@ -267,6 +272,16 @@ function ContentEditor() {
   );
 }
 
+const FIELD_LABELS: Record<string, string> = {
+  headline: "Headline",
+  subheadline: "Subheadline",
+  cta_label: "Button label (CTA)",
+  cta_secondary: "Secondary button label",
+  image_url: "Image",
+  image_alt: "Image description (alt text)",
+  hero_eyebrow: "Small text above headline",
+};
+
 function FieldEditor({
   section,
   fieldKey,
@@ -303,7 +318,9 @@ function FieldEditor({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5 gap-3">
-        <label className="block text-[11px] font-semibold uppercase tracking-[0.18em]">{fieldKey}</label>
+        <label className="block text-[11px] font-semibold uppercase tracking-[0.18em]">
+          {FIELD_LABELS[fieldKey] ?? fieldKey.replace(/_/g, " ")}
+        </label>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMultiline((m) => !m)}
