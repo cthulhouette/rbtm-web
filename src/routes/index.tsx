@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/PublicLayout";
-import { fetchSiteContent, fetchProducts, c } from "@/lib/content";
+import { fetchSiteContent, fetchProducts, c, productSlug } from "@/lib/content";
 import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero-mill.jpg";
 

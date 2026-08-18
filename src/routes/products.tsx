@@ -1,11 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { PublicLayout } from "@/components/PublicLayout";
-import { fetchProducts, fetchSiteContent, c } from "@/lib/content";
+import { fetchProducts, fetchSiteContent, c, productSlug } from "@/lib/content";
 
 export const Route = createFileRoute("/products")({
+  validateSearch: (search: Record<string, unknown>): { product?: string } =>
+    typeof search.product === "string" ? { product: search.product } : {},
   head: () => ({
     meta: [
       { title: "Products & Capabilities — RB Textile Mills" },
@@ -24,6 +26,31 @@ function ProductsPage() {
   const { data: content } = useQuery({ queryKey: ["site_content"], queryFn: fetchSiteContent });
   const map = content ?? {};
   const [open, setOpen] = useState<string | null>(null);
+  const { product: productParam } = Route.useSearch();
+  const navigate = useNavigate({ from: "/products" });
+  const refs = useRef<Record<string, HTMLElement | null>>({});
+  const scrolled = useRef(false);
+
+  useEffect(() => {
+    if (!productParam || !products) return;
+    const match = products.find((p) => productSlug(p.name) === productParam);
+    if (!match) return;
+    setOpen(match.id);
+    if (!scrolled.current) {
+      scrolled.current = true;
+      requestAnimationFrame(() =>
+        refs.current[match.id]?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      );
+    }
+  }, [productParam, products]);
+
+  const toggle = (id: string, name: string, isOpen: boolean) => {
+    setOpen(isOpen ? null : id);
+    navigate({
+      search: isOpen ? {} : { product: productSlug(name) },
+      replace: true,
+    });
+  };
 
   const readMore = c(map, "products", "read_more", "Read more");
   const readLess = c(map, "products", "read_less", "Close");
@@ -43,9 +70,9 @@ function ProductsPage() {
           {(products ?? []).map((p, i) => {
             const isOpen = open === p.id;
             return (
-              <article key={p.id} className={`border-b border-ink/20 transition-colors ${isOpen ? "bg-muted/40" : ""}`}>
+              <article key={p.id} ref={(el) => { refs.current[p.id] = el; }} className={`border-b border-ink/20 transition-colors ${isOpen ? "bg-muted/40" : ""}`}>
                 <button
-                  onClick={() => setOpen(isOpen ? null : p.id)}
+                  onClick={() => toggle(p.id, p.name, isOpen)}
                   aria-expanded={isOpen}
                   className="w-full flex items-center gap-6 py-7 text-left group cursor-pointer"
                 >
