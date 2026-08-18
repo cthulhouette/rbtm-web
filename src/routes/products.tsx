@@ -6,9 +6,8 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { fetchProducts, fetchSiteContent, c, productSlug } from "@/lib/content";
 
 export const Route = createFileRoute("/products")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    product: typeof search.product === "string" ? search.product : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { product?: string } =>
+    typeof search.product === "string" ? { product: search.product } : {},
   head: () => ({
     meta: [
       { title: "Products & Capabilities — RB Textile Mills" },
