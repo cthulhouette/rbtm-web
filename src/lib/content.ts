@@ -36,3 +36,11 @@ export async function fetchGallery() {
   if (error) throw error;
   return data ?? [];
 }
+
+export function productSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
