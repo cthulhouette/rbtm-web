@@ -70,9 +70,9 @@ function ProductsPage() {
           {(products ?? []).map((p, i) => {
             const isOpen = open === p.id;
             return (
-              <article key={p.id} className={`border-b border-ink/20 transition-colors ${isOpen ? "bg-muted/40" : ""}`}>
+              <article key={p.id} ref={(el) => { refs.current[p.id] = el; }} className={`border-b border-ink/20 transition-colors ${isOpen ? "bg-muted/40" : ""}`}>
                 <button
-                  onClick={() => setOpen(isOpen ? null : p.id)}
+                  onClick={() => toggle(p.id, p.name, isOpen)}
                   aria-expanded={isOpen}
                   className="w-full flex items-center gap-6 py-7 text-left group cursor-pointer"
                 >
