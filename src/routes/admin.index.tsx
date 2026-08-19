@@ -95,7 +95,9 @@ function AdminDashboard() {
         {tab === "content" && <ContentEditor />}
         {tab === "products" && <ProductsEditor />}
         {tab === "gallery" && <GalleryEditor />}
+        {tab === "clients" && <ClientsEditor />}
         {tab === "submissions" && <SubmissionsList />}
+
       </main>
     </div>
   );
