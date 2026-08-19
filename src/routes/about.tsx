@@ -36,10 +36,11 @@ function AboutPage() {
           <img
             src={image}
             alt={c(map, "about", "image_alt", "RB Textile Mills facility")}
-            className="mt-12 w-full max-h-[520px] object-cover border border-ink/15"
+            className="mt-12 mx-auto block w-full max-h-[520px] object-contain object-center border border-ink/15"
             loading="lazy"
           />
         )}
+
 
         <div className="mt-16 grid md:grid-cols-2 gap-12 border-t border-ink pt-12">
           <div className="space-y-6">
