@@ -44,3 +44,13 @@ export function productSlug(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+export async function fetchClientsCerts() {
+  const { data, error } = await supabase
+    .from("clients_certifications")
+    .select("*")
+    .eq("visible", true)
+    .order("order", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
