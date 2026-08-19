@@ -670,3 +670,206 @@ function SubmissionsList() {
     </div>
   );
 }
+
+/* ----- Clients & Certifications ----- */
+function ClientsEditor() {
+  const qc = useQueryClient();
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["clients_certs_admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients_certifications")
+        .select("*")
+        .order("order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  async function add(kind: "client" | "certification") {
+    const { error } = await supabase.from("clients_certifications").insert({
+      kind,
+      name: kind === "client" ? "New Client" : "New Certification",
+      order: (items?.length ?? 0) + 1,
+    });
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["clients_certs_admin"] });
+    qc.invalidateQueries({ queryKey: ["clients_certs"] });
+  }
+
+  if (isLoading) return <Loader2 className="animate-spin" />;
+
+  const clients = (items ?? []).filter((i) => i.kind === "client");
+  const certs = (items ?? []).filter((i) => i.kind === "certification");
+
+  return (
+    <div>
+      <SectionTitle>Clients & Certifications</SectionTitle>
+
+      <div className="flex gap-3 mb-8">
+        <button
+          onClick={() => add("client")}
+          className="bg-ink text-background px-6 py-3 text-xs font-bold uppercase tracking-[0.22em]"
+        >
+          + Add Client
+        </button>
+        <button
+          onClick={() => add("certification")}
+          className="border border-ink px-6 py-3 text-xs font-bold uppercase tracking-[0.22em] hover:bg-muted"
+        >
+          + Add Certification
+        </button>
+      </div>
+
+      <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-3">Clients</div>
+      <div className="grid gap-4">
+        {clients.length === 0 && <p className="text-xs text-ink/40 italic mb-4">No clients yet.</p>}
+        {clients.map((it) => (
+          <ClientCertRow key={it.id} item={it} />
+        ))}
+      </div>
+
+      <div className="text-[10px] uppercase tracking-[0.25em] text-ink/50 mt-10 mb-3">Certifications</div>
+      <div className="grid gap-4">
+        {certs.length === 0 && <p className="text-xs text-ink/40 italic">No certifications yet.</p>}
+        {certs.map((it) => (
+          <ClientCertRow key={it.id} item={it} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClientCertRow({ item }: { item: any }) {
+  const qc = useQueryClient();
+  const [it, setIt] = useState(item);
+  const [uploading, setUploading] = useState(false);
+
+  function invalidate() {
+    qc.invalidateQueries({ queryKey: ["clients_certs_admin"] });
+    qc.invalidateQueries({ queryKey: ["clients_certs"] });
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const path = `clients/${crypto.randomUUID()}-${file.name}`;
+    const { error } = await supabase.storage.from("rb-textile-media").upload(path, file);
+    if (error) {
+      setUploading(false);
+      return toast.error(error.message);
+    }
+    const { data } = supabase.storage.from("rb-textile-media").getPublicUrl(path);
+    setIt({ ...it, image_url: data.publicUrl });
+    setUploading(false);
+    toast.success("Uploaded. Click Save to publish.");
+  }
+
+  async function save() {
+    const { error } = await supabase
+      .from("clients_certifications")
+      .update({
+        kind: it.kind,
+        name: it.name,
+        description: it.description,
+        image_url: it.image_url,
+        order: it.order,
+        visible: it.visible,
+      })
+      .eq("id", it.id);
+    if (error) return toast.error(error.message);
+    toast.success("Saved.");
+    invalidate();
+  }
+
+  async function remove() {
+    if (!confirm("Delete this entry?")) return;
+    const { error } = await supabase.from("clients_certifications").delete().eq("id", it.id);
+    if (error) return toast.error(error.message);
+    invalidate();
+  }
+
+  return (
+    <Card>
+      <div className="grid md:grid-cols-[220px_1fr_auto] gap-6">
+        <div>
+          <div className="aspect-video bg-muted border border-ink/15 flex items-center justify-center overflow-hidden">
+            {it.image_url ? (
+              <img src={it.image_url} alt="" className="mx-auto block max-h-full max-w-full object-contain object-center" />
+            ) : (
+              <span className="text-[10px] uppercase tracking-[0.2em] text-ink/40">No photo</span>
+            )}
+          </div>
+          <label className="mt-2 inline-flex items-center gap-2 border border-ink/30 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] cursor-pointer">
+            <Upload size={12} /> {uploading ? "…" : "Upload photo"}
+            <input type="file" accept="image/*" className="hidden" onChange={onFile} />
+          </label>
+          <input
+            value={it.image_url ?? ""}
+            onChange={(e) => setIt({ ...it, image_url: e.target.value })}
+            placeholder="…or paste image URL"
+            className="mt-2 w-full border border-ink/30 px-3 py-2 text-xs"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <select
+              value={it.kind}
+              onChange={(e) => setIt({ ...it, kind: e.target.value })}
+              className="border border-ink/30 px-3 py-2 text-sm"
+            >
+              <option value="client">Client</option>
+              <option value="certification">Certification</option>
+            </select>
+            <input
+              value={it.name}
+              onChange={(e) => setIt({ ...it, name: e.target.value })}
+              placeholder="Name"
+              className="flex-1 border border-ink/30 px-3 py-2 font-semibold"
+            />
+          </div>
+          <textarea
+            value={it.description ?? ""}
+            onChange={(e) => setIt({ ...it, description: e.target.value })}
+            rows={3}
+            placeholder="Optional details shown under the name"
+            className="w-full border border-ink/30 px-3 py-2 text-sm"
+          />
+          <div className="flex gap-4 items-center text-xs">
+            <label className="flex items-center gap-2 uppercase tracking-[0.18em]">
+              Order
+              <input
+                type="number"
+                value={it.order}
+                onChange={(e) => setIt({ ...it, order: parseInt(e.target.value || "0") })}
+                className="w-16 border border-ink/30 px-2 py-1"
+              />
+            </label>
+            <label className="flex items-center gap-2 uppercase tracking-[0.18em]">
+              <input
+                type="checkbox"
+                checked={it.visible}
+                onChange={(e) => setIt({ ...it, visible: e.target.checked })}
+              />
+              Visible
+            </label>
+          </div>
+        </div>
+
+        <div className="flex md:flex-col gap-2">
+          <button
+            onClick={save}
+            className="bg-ink text-background px-5 py-2 text-[10px] font-bold uppercase tracking-[0.22em]"
+          >
+            Save
+          </button>
+          <button onClick={remove} className="border border-ink/30 px-3 py-2 text-ink/70 hover:text-destructive">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
