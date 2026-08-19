@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      clients_certifications: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          kind: string
+          name: string
+          order: number
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          kind?: string
+          name: string
+          order?: number
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          kind?: string
+          name?: string
+          order?: number
+          visible?: boolean
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           company: string | null
