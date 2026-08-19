@@ -15,7 +15,9 @@ export function SiteHeader() {
     { to: "/about", label: c(map, "nav", "about", "About") },
     { to: "/products", label: c(map, "nav", "products", "Products") },
     { to: "/gallery", label: c(map, "nav", "gallery", "Gallery") },
+    { to: "/clients", label: c(map, "nav", "clients", "Clients") },
     { to: "/contact", label: c(map, "nav", "contact", "Contact") },
+
   ] as const;
 
   return (
