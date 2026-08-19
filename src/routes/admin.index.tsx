@@ -51,7 +51,9 @@ function AdminDashboard() {
     { id: "content", label: "Site Content", icon: FileText },
     { id: "products", label: "Products", icon: Package },
     { id: "gallery", label: "Gallery", icon: Image },
+    { id: "clients", label: "Clients & Certs", icon: Award },
     { id: "submissions", label: "Inbox", icon: Inbox },
+
   ];
 
   return (
