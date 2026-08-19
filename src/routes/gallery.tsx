@@ -43,9 +43,10 @@ function GalleryPage() {
             {(items ?? []).map((it) => {
               const yt = it.type === "video" ? getYoutubeEmbed(it.url) : null;
               return (
-                <figure key={it.id} className="mb-4 break-inside-avoid bg-background/5">
+                <figure key={it.id} className="mb-4 break-inside-avoid bg-background/5 text-center">
                   {it.type === "image" ? (
-                    <img src={it.url} alt={it.caption ?? ""} className="w-full" loading="lazy" />
+                    <img src={it.url} alt={it.caption ?? ""} className="mx-auto block max-w-full h-auto" loading="lazy" />
+
                   ) : yt ? (
                     <div className="aspect-video">
                       <iframe
