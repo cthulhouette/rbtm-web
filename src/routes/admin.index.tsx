@@ -5,13 +5,14 @@ import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchSiteContent, fetchProducts, fetchGallery } from "@/lib/content";
-import { LogOut, FileText, Package, Image, Inbox, Loader2, Trash2, Upload } from "lucide-react";
+import { LogOut, FileText, Package, Image, Inbox, Loader2, Trash2, Upload, Award } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
-type Tab = "content" | "products" | "gallery" | "submissions";
+type Tab = "content" | "products" | "gallery" | "clients" | "submissions";
+
 
 function AdminDashboard() {
   const navigate = useNavigate();
